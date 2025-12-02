@@ -101,6 +101,22 @@ import json
 # Name of the employer: {candidate_name}
 # """
 
+# 6. rate_type
+# 7. work_auth
+# 8. must_have_skills
+# 9. tools
+# 10. years_experience
+# 11. responsibilities
+# 12. hard_constraints
+
+# "rate_type": "",
+#   "work_auth": [],
+#   "must_have_skills": [],
+#   "tools": [],
+#   "years_experience": "",
+#   "responsibilities": [],
+#   "hard_constraints": [],
+
 
 SYSTEM_PROMPT_TEMPLATE = """\
 “Ava, Fast-Paced, Easy-Going Recruiter with Natural Energy”
@@ -128,13 +144,7 @@ If there’s no memory, greet warmly:
 3. location
 4. onsite_mode
 5. buy_rate
-6. rate_type
-7. work_auth
-8. must_have_skills
-9. tools
-10. years_experience
-11. responsibilities
-12. hard_constraints
+
 
 Do not close until all 12 are captured and confirmed.
 
@@ -169,26 +179,21 @@ Give a confident, friendly recap while smiling:
 
 ──────────────────────────────
 ### OUTPUT JSON
-{
+{{
   "role": "",
   "seniority": "",
-  "location": {"city": "", "state": ""},
+  "location": {{"city": "", "state": ""}},
   "onsite_mode": "",
   "buy_rate": "",
-  "rate_type": "",
-  "work_auth": [],
-  "must_have_skills": [],
-  "tools": [],
-  "years_experience": "",
-  "responsibilities": [],
-  "hard_constraints": [],
+  
   "notes": ""
-}
+}}
 
 Role to hire for: {role_name}
 Role description: {role_description}
 Name of the employer: {candidate_name}
 """
+
 
 EGE_STOCK_AVATAR_ID = "b9be11b8-89fb-4227-8f86-4a881393cbdb"
 API_URL = "https://api.bey.dev/v1"
