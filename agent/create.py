@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 from typing import Optional
@@ -47,9 +48,10 @@ def main(
             ),
             "avatar_id": avatar_id if avatar_id is not None else EGE_STOCK_AVATAR_ID,
             # ---
+            # Set session length to 30 minutes
+            "max_session_length_minutes": 30,
             # Uncomment the following lines to customize the avatar further
             # "language": "es",  # use language codes, e.g., "en", "es", "fr"
-            # "max_session_length_minutes": 10,
             # "capabilities": ["webcam_vision"],  # enable agent to see user's video
         },
     )
@@ -75,23 +77,30 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Create an end-to-end Bey avatar agent for interviews."
     )
+    # Make CLI role fields optional so they can be provided via --role-file
     parser.add_argument(
         "--role-name",
         type=str,
         help="Name of the role to interview for.",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--role-description",
         type=str,
         help="Description of the role to interview for.",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--candidate-name",
         type=str,
         help="Name of the candidate to interview.",
-        required=True,
+        required=False,
+    )
+    parser.add_argument(
+        "--role-file",
+        type=str,
+        help="Path to a JSON file containing role_name, role_description, candidate_name",
+        default=None,
     )
     parser.add_argument(
         "--avatar-id", type=str, help="Avatar ID to use.", default=EGE_STOCK_AVATAR_ID
@@ -125,11 +134,33 @@ if __name__ == "__main__":
     elif args.memory:
         memory_value = args.memory
 
+    # Resolve role fields: CLI overrides file values
+    role_name = args.role_name
+    role_description = args.role_description
+    candidate_name = args.candidate_name
+
+    if args.role_file:
+        if not os.path.exists(args.role_file):
+            raise FileNotFoundError(f"role file not found: {args.role_file}")
+        with open(args.role_file, "r", encoding="utf-8") as rf:
+            try:
+                role_data = json.load(rf)
+            except Exception as e:
+                raise ValueError(f"Failed to parse role file {args.role_file}: {e}")
+        # Accept multiple possible keys for flexibility
+        role_name = role_name or role_data.get("role_name") or role_data.get("role")
+        role_description = role_description or role_data.get("role_description") or role_data.get("description")
+        candidate_name = candidate_name or role_data.get("candidate_name") or role_data.get("candidate")
+
+    # Validate required fields after resolution
+    if not role_name or not role_description or not candidate_name:
+        raise ValueError("role_name, role_description and candidate_name must be provided either as CLI flags or via --role-file")
+
     main(
         api_key=api_key,
-        role_name=args.role_name,
-        role_description=args.role_description,
-        candidate_name=args.candidate_name,
+        role_name=role_name,
+        role_description=role_description,
+        candidate_name=candidate_name,
         avatar_id=args.avatar_id,
         memory=memory_value,
     )
